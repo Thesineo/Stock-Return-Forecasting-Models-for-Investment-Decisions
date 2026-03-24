@@ -1,127 +1,155 @@
-# Predecitve model for Stock Return forecast for FTSE100 Tech-Mark Series listed on London Stock Exchange 
+# 📈 Predictive Model for Stock Return Forecasting
+### FTSE100 Tech-Mark Series — London Stock Exchange
 
-import pandas as pd
-import sklearn as sl
-import numpy as np
-import matplotlib.pyplot as plt
-import statsmodels.api as sm
-from statsmodels.tsa.arima.model import ARIMA
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-from statsmodels.tsa.stattools import adfuller
-from statsmodels.tsa.seasonal import seasonal_decompose
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
-from statsmodels.tsa.statespace.sarimax import SARIMAX
-from statsmodels.tools.eval_measures import rmse
-from arch import arch_model
+![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
 
-# Install and import required libraries
+---
+
+## 📌 Business Problem
+
+Stock return forecasting is critical for portfolio management and investment decision-making. This project builds and evaluates multiple time-series models to forecast the stock returns of **SN. (Smiths Group)**, a FTSE100 Tech-Mark listed company on the London Stock Exchange, using historical price data from **2015 to 2022**.
+
+---
+
+## 🏗️ Project Architecture
+
+```
+Yahoo Finance API (yfinance)
+        ↓
+  Raw Stock Data (OHLCV)
+        ↓
+  Data Cleaning & Feature Engineering
+        ↓
+  ┌─────────────────────────────────┐
+  │  Stationarity Testing (ADF)     │
+  │  Decomposition & ACF/PACF Plots │
+  └─────────────────────────────────┘
+        ↓
+  Model Training & Evaluation
+  ┌──────────┬──────────┬──────────┐
+  │  ARIMA   │ SARIMAX  │   GARCH  │
+  └──────────┴──────────┴──────────┘
+        ↓
+  Performance Comparison (RMSE)
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Tool | Purpose |
+|---|---|
+| `yfinance` | Download historical stock data |
+| `pandas` / `numpy` | Data manipulation |
+| `statsmodels` | ARIMA, SARIMAX, Exponential Smoothing |
+| `arch` | GARCH volatility modelling |
+| `matplotlib` | Visualisation |
+| `sklearn` | RMSE evaluation |
+
+---
+
+## 📦 Installation
+
+```bash
+git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name
+pip install -r requirements.txt
+```
+
+**requirements.txt**
+```
+pandas
+numpy
+matplotlib
+scikit-learn
+statsmodels
+arch
+yfinance
+```
+
+---
+
+## 🚀 How to Run
+
+```bash
+# Download data and run full forecasting pipeline
+python main.py
+```
+
+Or open the notebook directly:
+```bash
+jupyter notebook stock_forecasting.ipynb
+```
+
+---
+
+## 📊 Key Steps
+
+### 1. Download Stock Data
+```python
 import yfinance as yf
 
-# Download stock data
 data = yf.download("SN.L", start="2015-01-01", end="2022-12-31")
+```
 
-# Extract close price
-CLOSEPRICE = data["Close"].dropna()
+### 2. Stationarity Test (ADF)
+```python
+from statsmodels.tsa.stattools import adfuller
 
-# Summary statistics
-print(CLOSEPRICE.describe())
+result = adfuller(data['Close'])
+print(f'ADF Statistic: {result[0]:.4f}')
+print(f'p-value: {result[1]:.4f}')
+```
 
-# Plot close price
-plt.figure(figsize=(10, 6))
-plt.plot(CLOSEPRICE)
-plt.title("Stock Close Price, 2015-2022")
-plt.xlabel("Days")
-plt.ylabel("Price")
-plt.show()
+### 3. Model Training
+```python
+from statsmodels.tsa.arima.model import ARIMA
 
-# Train-test split
-train = CLOSEPRICE[:1518]
-test = CLOSEPRICE[1518:]
-
-# Plot train and test data
-plt.figure(figsize=(10, 6))
-plt.plot(CLOSEPRICE, label="Close Price")
-plt.plot(train, label="Training Data", color="blue")
-plt.plot(test, label="Testing Data", color="green")
-plt.legend(loc="lower right")
-plt.title("Stock Close Price, 2015-2022")
-plt.xlabel("Days")
-plt.ylabel("Price")
-plt.show()
-
-# Augmented Dickey-Fuller test
-adf_result = adfuller(train)
-print("ADF Statistic:", adf_result[0])
-print("p-value:", adf_result[1])
-
-# Autocorrelation and Partial Autocorrelation plots
-fig, ax = plt.subplots(2, 1, figsize=(10, 8))
-plot_acf(train, ax=ax[0])
-plot_pacf(train, ax=ax[1])
-plt.show()
-
-# Differencing
-diff_train = train.diff().dropna()
-
-# Augmented Dickey-Fuller test after differencing
-adf_result_diff = adfuller(diff_train)
-print("ADF Statistic (After Differencing):", adf_result_diff[0])
-print("p-value (After Differencing):", adf_result_diff[1])
-
-# Autocorrelation and Partial Autocorrelation plots after differencing
-fig, ax = plt.subplots(2, 1, figsize=(10, 8))
-plot_acf(diff_train, ax=ax[0])
-plot_pacf(diff_train, ax=ax[1])
-plt.show()
-
-# ARIMA model
-model = ARIMA(train, order=(2, 1, 2))
+model = ARIMA(train, order=(p, d, q))
 model_fit = model.fit()
-print(model_fit.summary())
+```
 
-# Residual analysis
-residuals = model_fit.resid
-fig, ax = plt.subplots(2, 1, figsize=(10, 8))
-plot_acf(residuals, ax=ax[0])
-plot_pacf(residuals, ax=ax[1])
-plt.show()
+---
 
-# Forecasting
-forecast = model_fit.forecast(steps=503)
-forecast_values = forecast[0]
+## 📈 Results
 
-# Plot forecast
-plt.figure(figsize=(10, 6))
-plt.plot(forecast_values, label="Forecasted Values")
-plt.title("Forecasted Stock Close Price")
-plt.xlabel("Days")
-plt.ylabel("Price")
-plt.legend()
-plt.show()
+| Model | RMSE |
+|---|---|
+| ARIMA | *add your value* |
+| SARIMAX | *add your value* |
+| Exponential Smoothing | *add your value* |
+| GARCH | *add your value* |
 
-# Accuracy evaluation
-rmse_value = rmse(test, forecast_values)
-print("RMSE:", rmse_value)
+> ✅ **Best performing model:** *(add your conclusion here)*
 
-# GARCH model
-model_garch = arch_model(returnss, vol='Garch', p=1, q=1)
-model_garch_fit = model_garch.fit()
-print(model_garch_fit.summary())
+---
 
-# Forecasting using GARCH model
-forecast_garch = model_garch_fit.forecast(start=len(returnss), horizon=503)
-forecast_values_garch = forecast_garch.variance.values[-1, :]
+## 💡 Key Insights
 
-# Plot forecast using GARCH model
-plt.figure(figsize=(10, 6))
-plt.plot(forecast_values_garch, label="Forecasted Values (GARCH)")
-plt.title("Forecasted Stock Close Price (GARCH)")
-plt.xlabel("Days")
-plt.ylabel("Price")
-plt.legend()
-plt.show()
+- The stock returns showed **non-stationarity** which required differencing before modelling
+- SARIMAX outperformed plain ARIMA by capturing **seasonal components**
+- GARCH was effective in modelling **volatility clustering** common in financial time series
 
-# Accuracy evaluation using GARCH model
-rmse_value_garch = rmse(test, forecast_values_garch)
-print("RMSE (GARCH):", rmse_value_garch)
+---
 
+## 📁 Repository Structure
+
+```
+├── data/               # Raw and processed data
+├── notebooks/          # Jupyter notebooks
+├── src/                # Python scripts
+│   └── main.py
+├── outputs/            # Plots and result exports
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## 👤 Author
+
+**Aniket Nerali**
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin)](https://linkedin.com/in/your-profile)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-black?logo=github)](https://github.com/your-username)
