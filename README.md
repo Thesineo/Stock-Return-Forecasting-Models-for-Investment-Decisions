@@ -195,7 +195,7 @@ ugarchforecast(m, n.ahead = 503)
 ## 👤 Author
 
 **Aniket Amar Nerali**
-MSc Business Analytics & Decision Sciences — University of Leeds
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin)](https://linkedin.com/in/your-profile)
-[![GitHub](https://img.shields.io/badge/GitHub-Follow-black?logo=github)](https://github.com/Thesineo)
+
+[![LinkedIn](https://www.linkedin.com/in/aniket-nerali)
+[![GitHub](https://github.com/Thesineo)
